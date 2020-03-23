@@ -1,0 +1,7 @@
+{
+	"spotify_app": {
+		"client_id": "",
+		"client_secret": "",
+		"oauth_redirect_url": ""
+	}
+}
