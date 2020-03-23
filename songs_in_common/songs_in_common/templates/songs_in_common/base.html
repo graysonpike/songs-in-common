@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html lang='en'>
+	<head>
+		<meta charset="utf-8">
+		<link href="https://fonts.googleapis.com/css?family=Montserrat&display=swap" rel="stylesheet">
+		<script type="text/javascript" src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+		<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+		{% load static %}
+		<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/bootstrap.min.css' %}" />
+		<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/base.css' %}" />
+		{% block style_links %}{% endblock %}
+		<title>Songs in Common</title>
+	</head>
+	{% block content %}{% endblock %}
+	{% include "songs_in_common/footer.html" %}
+</html>

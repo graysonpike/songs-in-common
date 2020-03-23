@@ -1,3 +1,6 @@
+from . import views
+
+
 """songs_in_common URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
@@ -18,4 +21,5 @@ from django.urls import path
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', views.landing, name='landing'),
 ]

@@ -1,0 +1,12 @@
+{% block style_links %}
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/footer.css' %}" />
+{% endblock %}
+
+<div class="container footer">
+	<div class="row">
+		<div class="col-12 footer">
+			<p>&copy; Copyright Grayson Pike {% now "Y" %}</p> 
+		</div>
+	</div>
+</div>

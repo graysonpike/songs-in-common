@@ -1,0 +1,27 @@
+{% extends "songs_in_common/base.html" %}
+
+{% block style_links %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/landing.css' %}" />
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container landing-page">
+	<div class="header">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>Songs in Common</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<p class="tagline">Find Saved Spotify Tracks in common with friends</p>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
