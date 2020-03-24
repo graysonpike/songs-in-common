@@ -3,8 +3,8 @@ from django.db import models
 
 class SpotifyAccount(models.Model):
     username = models.CharField(max_length=512)
-    access_token = models.CharField(max_length=512)
-    refresh_token = models.CharField(max_length=512)
+    access_token = models.CharField(max_length=1024)
+    refresh_token = models.CharField(max_length=1024)
     datetime_joined = models.DateTimeField(auto_now_add=True)
 
 
