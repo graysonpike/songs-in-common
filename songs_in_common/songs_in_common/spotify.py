@@ -5,7 +5,7 @@ from urllib.parse import parse_qs
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from . import config
-from django.shortcuts import redirect
+from django.shortcuts import render, redirect
 from .models import SpotifyAccount, SavedTrack
 
 
@@ -75,17 +75,18 @@ def get_saved_songs(username):
     SavedTrack.objects.bulk_create(saved_track_objects)
 
 
-def get_intersection(user1, user2):
+def get_intersection_view(request):
+    username1 = request.GET.get('user1')
+    username2 = request.GET.get('user2')
+    user1 = SpotifyAccount.objects.get(username=username1)
+    user2 = SpotifyAccount.objects.get(username=username2)
     user1_uris = [track.uri for track in user1.savedtrack_set.all()]
     user2_uris = [track.uri for track in user2.savedtrack_set.all()]
     intersect_uris = list(set(user1_uris) & set(user2_uris)) 
     tracks = []
     for uri in intersect_uris:
         tracks.append(SavedTrack.objects.filter(uri=uri)[0])
-    for track in tracks:
-        print("Title:  " + track.title)
-        print("Aritst: " + track.artists)
-    return tracks
+    return render(request, 'songs_in_common/common.html', {"tracks": tracks})
 
 
 def authorize_user_view(request):

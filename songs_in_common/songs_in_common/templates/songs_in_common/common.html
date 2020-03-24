@@ -1,0 +1,37 @@
+{% extends "songs_in_common/base.html" %}
+
+{% block style_links %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/common.css' %}" />
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+	<div class="row">
+		<div class="col-sm-12">
+			<table class="table">
+				<thead>
+					<tr>
+						<th scope="col">Track</th>
+						<th scope="col">Artist</th>
+						<th scope="col">Album</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for track in tracks %}
+					<tr>
+						<th>{{ track.title }}</th>
+						<td>{{ track.artists|truncatechars:30 }}</td>
+						<td>{{ track.album }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{% endblock %}
