@@ -5,6 +5,7 @@ class SpotifyAccount(models.Model):
     username = models.CharField(max_length=512)
     access_token = models.CharField(max_length=1024)
     refresh_token = models.CharField(max_length=1024)
+    url = models.CharField(max_length=1024)
     image_url = models.CharField(max_length=1024, null=True)
     datetime_joined = models.DateTimeField(auto_now_add=True)
 

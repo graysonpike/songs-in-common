@@ -5,7 +5,7 @@ from urllib.parse import parse_qs
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from . import config
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, reverse
 from .models import SpotifyAccount, SavedTrack
 
 
@@ -85,7 +85,20 @@ def get_intersection_view(request):
     tracks = []
     for uri in intersect_uris:
         tracks.append(SavedTrack.objects.filter(uri=uri)[0])
-    return render(request, 'songs_in_common/common.html', {"tracks": tracks})
+    return render(request, 'songs_in_common/common.html', 
+        {
+            "tracks": tracks,
+            "user1": user1,
+            "user2": user2
+        })
+
+
+def users_view(request):
+    username = request.GET.get("user", None)
+    if username == None:
+        return redirect('landing')
+    other_users = SpotifyAccount.objects.exclude(username=username)
+    return render(request, "songs_in_common/users.html", {"username": username, "users": other_users})
 
 
 def authorize_user_view(request):
@@ -98,6 +111,7 @@ def save_user_view(request):
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     username = current_user['id']
+    url = current_user['external_urls']['spotify']
     try:
         existing_account = SpotifyAccount.objects.get(username=username)
         existing_account.delete()
@@ -108,6 +122,6 @@ def save_user_view(request):
         image_url = current_user['images'][0]['url']
     except Exception:
         pass
-    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url)
+    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url, url=url)
     get_saved_songs(account)
-    return redirect('landing')
+    return redirect(reverse('users') + "?user=" + account.username)

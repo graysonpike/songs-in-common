@@ -1,0 +1,40 @@
+{% extends "songs_in_common/base.html" %}
+
+{% block style_links %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/users.css' %}" />
+{% endblock %}
+
+
+{% block content %}
+
+<div class="container">
+	<div class="header">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>Compare with Friends</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<h5>Select a username below to compare Saved Tracks</h5>
+			</div>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<table class="table user-list">
+				<tbody>
+					{% for user in users %}
+					<tr>
+						<td><a href="/common?user1={{ username }}&user2={{ user.username }}">{{ user.username }}</a></td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

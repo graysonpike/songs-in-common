@@ -25,4 +25,5 @@ urlpatterns = [
     path('authorize/', spotify.authorize_user_view, name='authorize'),
     path('save-user/', spotify.save_user_view, name='save_user'),
     path('common/', spotify.get_intersection_view, name='common'),
+    path('users/', spotify.users_view, name='users'),
 ]

@@ -10,9 +10,21 @@
 {% block content %}
 
 <div class="container">
+	<div class="header">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>Songs in Common</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<h5>Showing common Saved Tracks for <a href="{{ user1.url }}">{{ user1.username }}</a> and <a href="{{ user2.url }}">{{ user2.username }}</a></h5>
+			</div>
+		</div>
+	</div>
 	<div class="row">
 		<div class="col-sm-12">
-			<table class="table">
+			<table class="table songs-list">
 				<thead>
 					<tr>
 						<th scope="col">Track</th>
