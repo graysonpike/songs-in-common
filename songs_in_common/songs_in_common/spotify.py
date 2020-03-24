@@ -56,8 +56,7 @@ def request_tokens(code):
     return access_token, refresh_token
 
 
-def get_saved_songs(username):
-    account = SpotifyAccount.objects.get(username=username)
+def get_saved_songs(account):
     spotify = spotipy.Spotify(auth=account.access_token)
     tracks = []
     results = spotify.current_user_saved_tracks(limit=50)
@@ -110,4 +109,5 @@ def save_user_view(request):
     except Exception:
         pass
     account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url)
+    get_saved_songs(account)
     return redirect('landing')
