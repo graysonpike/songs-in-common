@@ -11,8 +11,9 @@ class SpotifyAccount(models.Model):
 
 
 class SavedTrack(models.Model):
-	user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE)
-	title = models.CharField(max_length=1024)
-	album = models.CharField(max_length=1024)
-	artists = models.CharField(max_length=1024)
-	uri = models.CharField(max_length=128)
+    user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE)
+    title = models.CharField(max_length=1024)
+    album = models.CharField(max_length=1024)
+    artists = models.CharField(max_length=1024)
+    uri = models.CharField(max_length=256)
+    url = models.CharField(max_length=512)

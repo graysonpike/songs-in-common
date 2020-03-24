@@ -21,6 +21,11 @@
 				<h5>Showing common Saved Tracks for <a href="{{ user1.url }}">{{ user1.username }}</a> and <a href="{{ user2.url }}">{{ user2.username }}</a></h5>
 			</div>
 		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<p><a href="/users?user={{ user1.username }}">Click here</a> to compare with another user.</p>
+			</div>
+		</div>
 	</div>
 	<div class="row">
 		<div class="col-sm-12">
@@ -35,7 +40,7 @@
 				<tbody>
 					{% for track in tracks %}
 					<tr>
-						<th>{{ track.title }}</th>
+						<th><a class="track-title" href="{{ track.url }}">{{ track.title }}</a></th>
 						<td>{{ track.artists|truncatechars:30 }}</td>
 						<td>{{ track.album }}</td>
 					</tr>

@@ -1,3 +1,8 @@
 .songs-list {
-	margin-top: 30px !important;
+	margin-top: 20px !important;
+}
+
+.track-title {
+	color: white !important;
+	text-decoration: none;
 }
