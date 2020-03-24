@@ -41,8 +41,8 @@ def parse_response_code(url):
 def request_tokens(code):
     client_id = config.get_config()['spotify_app']['client_id']
     client_secret = config.get_config()['spotify_app']['client_secret']
-    header = {
-        "Authorization": "Basic %s" % (base64.b64encode('%s:%s' % (client_id, client_secret))) 
+    headers = {
+        "Authorization": "Basic %s" % (base64.b64encode(('%s:%s' % (client_id, client_secret)).encode()).decode('utf-8')), 
     }
     payload = {
         "grant_type": "authorization_code",
@@ -50,12 +50,13 @@ def request_tokens(code):
         "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_url'],
     }
     print("Making request: ")
-    print("Header:")
-    print(header)
+    print("Headers:")
+    print(headers)
     print("Data:")
     print(payload)
     response = requests.post(OAUTH_TOKEN_URL, headers=headers, data=payload)
     data = response.json()
+    print(data)
     access_token = data['access_token']
     refresh_token = data['refresh_token']
     print("Got Response:")
@@ -71,12 +72,11 @@ def authorize_user_view(request):
 
 
 def save_user_view(request):
-    access_token = request.POST.get('access_token', None)
-    refresh_token = request.POST.get('refresh_token', None)
-    if access_token == None or refresh_token == None:
-        return redirect('landing')
+    code = request.GET.get('code')
+    access_token, refresh_token = request_tokens(code)
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     print(current_user)
     username = "Grayson112233"
     account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token)
+    return redirect('landing')
