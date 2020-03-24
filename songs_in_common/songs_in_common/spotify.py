@@ -87,9 +87,10 @@ def get_intersection_view(request):
         tracks.append(SavedTrack.objects.filter(uri=uri)[0])
     return render(request, 'songs_in_common/common.html', 
         {
+            "num_tracks": len(tracks),
             "tracks": tracks,
             "user1": user1,
-            "user2": user2
+            "user2": user2,
         })
 
 
@@ -111,6 +112,7 @@ def save_user_view(request):
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     username = current_user['id']
+    display_name = current_user['display_name']
     url = "https://open.spotify.com/user/" + username
     try:
         existing_account = SpotifyAccount.objects.get(username=username)
@@ -122,6 +124,6 @@ def save_user_view(request):
         image_url = current_user['images'][0]['url']
     except Exception:
         pass
-    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url, url=url)
+    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url, url=url, display_name=display_name)
     get_saved_songs(account)
     return redirect(reverse('users') + "?user=" + account.username)

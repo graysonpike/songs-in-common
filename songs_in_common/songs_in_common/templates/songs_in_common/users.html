@@ -33,7 +33,7 @@
 				<tbody>
 					{% for user in users %}
 					<tr>
-						<td><a href="/common?user1={{ username }}&user2={{ user.username }}">{{ user.username }}</a></td>
+						<td><a href="/common?user1={{ username }}&user2={{ user.username }}">{{ user.display_name }}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
