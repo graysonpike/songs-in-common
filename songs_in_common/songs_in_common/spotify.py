@@ -111,7 +111,7 @@ def save_user_view(request):
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     username = current_user['id']
-    url = current_user['href']
+    url = "https://open.spotify.com/user/" + username
     try:
         existing_account = SpotifyAccount.objects.get(username=username)
         existing_account.delete()
