@@ -70,7 +70,8 @@ def get_saved_songs(account):
         album = track['album']['name']
         artists = ', '.join([artist['name'] for artist in track['artists']])
         uri = track['uri']
-        saved_track_objects.append(SavedTrack(user=account, title=title, album=album, artists=artists, uri=uri))
+        url = track['external_urls']['spotify']
+        saved_track_objects.append(SavedTrack(user=account, title=title, album=album, artists=artists, uri=uri, url=url))
     SavedTrack.objects.bulk_create(saved_track_objects)
 
 
