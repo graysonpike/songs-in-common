@@ -65,7 +65,27 @@ def get_saved_songs(username):
     while results['next']:
         results = spotify.next(results)
         tracks += results['items']
-    print(len(tracks))
+    saved_track_objects = []
+    for track in [t['track'] for t in tracks]:
+        title = track['name']
+        album = track['album']['name']
+        artists = ', '.join([artist['name'] for artist in track['artists']])
+        uri = track['uri']
+        saved_track_objects.append(SavedTrack(user=account, title=title, album=album, artists=artists, uri=uri))
+    SavedTrack.objects.bulk_create(saved_track_objects)
+
+
+def get_intersection(user1, user2):
+    user1_uris = [track.uri for track in user1.savedtrack_set.all()]
+    user2_uris = [track.uri for track in user2.savedtrack_set.all()]
+    intersect_uris = list(set(user1_uris) & set(user2_uris)) 
+    tracks = []
+    for uri in intersect_uris:
+        tracks.append(SavedTrack.objects.filter(uri=uri)[0])
+    for track in tracks:
+        print("Title:  " + track.title)
+        print("Aritst: " + track.artists)
+    return tracks
 
 
 def authorize_user_view(request):
