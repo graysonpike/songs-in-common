@@ -49,21 +49,10 @@ def request_tokens(code):
         "code": code,
         "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_url'],
     }
-    print("Making request: ")
-    print("Headers:")
-    print(headers)
-    print("Data:")
-    print(payload)
     response = requests.post(OAUTH_TOKEN_URL, headers=headers, data=payload)
     data = response.json()
-    print(data)
     access_token = data['access_token']
     refresh_token = data['refresh_token']
-    print("Got Response:")
-    print("Access Token:")
-    print(access_token)
-    print("Refresh Token:")
-    print(refresh_token)
     return access_token, refresh_token
 
 
@@ -77,6 +66,11 @@ def save_user_view(request):
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     print(current_user)
-    username = "Grayson112233"
-    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token)
+    username = current_user['id']
+    image_url = None
+    try:
+        image_url = current_user['images'][0]['url']
+    except Exception:
+        pass
+    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url)
     return redirect('landing')
