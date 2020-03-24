@@ -25,7 +25,7 @@ SECRET_KEY = 'y(uc0c4er59s6c$wvj2df&9+81q$!_xn0=0w)3^2peb0g*3&=0'
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['localhost', 'www.songsincommon.com']
 
 
 # Application definition
