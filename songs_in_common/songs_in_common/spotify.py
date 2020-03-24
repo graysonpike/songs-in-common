@@ -56,6 +56,18 @@ def request_tokens(code):
     return access_token, refresh_token
 
 
+def get_saved_songs(username):
+    account = SpotifyAccount.objects.get(username=username)
+    spotify = spotipy.Spotify(auth=account.access_token)
+    tracks = []
+    results = spotify.current_user_saved_tracks(limit=50)
+    tracks += results['items']
+    while results['next']:
+        results = spotify.next(results)
+        tracks += results['items']
+    print(len(tracks))
+
+
 def authorize_user_view(request):
     return redirect(get_authorize_url())
 
@@ -65,8 +77,12 @@ def save_user_view(request):
     access_token, refresh_token = request_tokens(code)
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
-    print(current_user)
     username = current_user['id']
+    try:
+        existing_account = SpotifyAccount.objects.get(username=username)
+        existing_account.delete()
+    except SpotifyAccount.DoesNotExist:
+        pass
     image_url = None
     try:
         image_url = current_user['images'][0]['url']
