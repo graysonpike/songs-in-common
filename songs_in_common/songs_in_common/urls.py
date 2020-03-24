@@ -1,4 +1,4 @@
-from . import views
+from . import views, spotify
 
 
 """songs_in_common URL Configuration
@@ -22,4 +22,6 @@ from django.urls import path
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.landing, name='landing'),
+    path('authorize/', spotify.authorize_user_view, name='authorize'),
+    path('save-user/', spotify.save_user_view, name='save_user')
 ]
