@@ -10,7 +10,6 @@
 {% block content %}
 
 <div class="container">
-	{% if num_tracks == 0 %}
 	<div class="header">
 		<div class="row">
 			<div class="col-sm-12">
@@ -20,7 +19,7 @@
 
 		<div class="row">
 			<div class="col-sm-12">
-				<h5>It looks like <a href="{{ user1.url }}">{{ user1.display_name }}</a> and <a href="{{ user2.url }}">{{ user2.display_name }}</a> have no Saved Tracks in common.  :(</h5>
+				<h5>Showing {{ num_tracks }} Tracks and {{ num_playlists }} Followed Playlists in common for <a href="{{ user1.url }}">{{ user1.display_name }}</a> and <a href="{{ user2.url }}">{{ user2.display_name }}</a></h5>
 			</div>
 		</div>
 		<div class="row">
@@ -29,23 +28,44 @@
 			</div>
 		</div>
 	</div>
-	{% else %}
-	<div class="header">
-		<div class="row">
-			<div class="col-sm-12">
-				<h1>Songs in Common</h1>
-			</div>
+	{% if playlists %}
+	<div class="row">
+		<div class="col-sm-12">
+			<h5 class="list-title">Followed Playlists</h5>
 		</div>
-
-		<div class="row">
-			<div class="col-sm-12">
-				<h5>Showing {{ num_tracks }} common Saved Tracks for <a href="{{ user1.url }}">{{ user1.display_name }}</a> and <a href="{{ user2.url }}">{{ user2.display_name }}</a></h5>
-			</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<table class="table playlists-list">
+				<thead>
+					<tr>
+						<th scope="col">Playlist</th>
+						<th scope="col">Creator</th>
+						<th scope="col"># Tracks</th>
+					</tr>
+				</thead>
+				<tbody>
+					{% for playlist in playlists %}
+					<tr>
+						<th><a class="track-title" href="{{ playlist.url }}">{{ playlist.name }}</a></th>
+						<td>{{ playlist.owner_display_name }}</td>
+						<td>{{ playlist.num_tracks }}</td>
+					</tr>
+					{% endfor %}
+				</tbody>
+			</table>
 		</div>
-		<div class="row">
-			<div class="col-sm-12">
-				<p><a href="/users?user={{ user1.username }}">Click here</a> to compare with another user.</p>
-			</div>
+	</div>
+	{% endif %}
+	{% if tracks %}
+	<div class="row">
+		<div class="col-sm-12">
+			<h5 class="list-title">Tracks</h5>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<p>Includes Saved Tracks and Tracks from Public Playlists</p>
 		</div>
 	</div>
 	<div class="row">
@@ -63,7 +83,7 @@
 					<tr>
 						<th><a class="track-title" href="{{ track.url }}">{{ track.title }}</a></th>
 						<td>{{ track.artists|truncatechars:30 }}</td>
-						<td>{{ track.album }}</td>
+						<td>{{ track.album|truncatechars:50 }}</td>
 					</tr>
 					{% endfor %}
 				</tbody>

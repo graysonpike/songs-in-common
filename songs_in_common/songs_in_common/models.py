@@ -18,3 +18,14 @@ class SavedTrack(models.Model):
     artists = models.CharField(max_length=1024)
     uri = models.CharField(max_length=256)
     url = models.CharField(max_length=512)
+    from_playlist = models.BooleanField(default=False)
+
+
+class FollowedPlaylist(models.Model):
+    user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE)
+    name = models.CharField(max_length=1024)
+    owner_username = models.CharField(max_length=512)
+    owner_display_name = models.CharField(max_length=512)
+    spotify_id = models.CharField(max_length=512)
+    num_tracks = models.IntegerField()
+    url = models.CharField(max_length=512)
