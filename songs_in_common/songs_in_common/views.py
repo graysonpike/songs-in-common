@@ -4,4 +4,8 @@ from .models import SpotifyAccount
 
 
 def landing(request):
-    return render(request, 'songs_in_common/landing.html')
+    compare_with = request.GET.get('compare_with', None)
+    compare_with_param = ""
+    if compare_with:
+        compare_with_param = "?compare_with=" + compare_with
+    return render(request, 'songs_in_common/landing.html', {"compare_with_param": compare_with_param})

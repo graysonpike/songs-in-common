@@ -14,6 +14,8 @@ OAUTH_TOKEN_URL = "https://accounts.spotify.com/api/token"
 PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
 AUTH_SCOPE = "user-library-read"
 
+COMPARE_WITH_CACHE = {}
+
 
 def get_client():
     client_id = config.get_config()['spotify_app']['client_id']
@@ -175,11 +177,32 @@ def users_view(request):
     username = request.GET.get("user", None)
     if username == None:
         return redirect('landing')
+    # Handle invite links
+    global COMPARE_WITH_CACHE
+    ip = str(get_client_ip(request))
+    compare_with = COMPARE_WITH_CACHE.get(ip, None)
+    if compare_with:
+        del COMPARE_WITH_CACHE[ip]
+        return redirect(reverse('common') + "?user1=" + username + "&user2=" + compare_with)
     other_users = SpotifyAccount.objects.exclude(username=username)
-    return render(request, "songs_in_common/users.html", {"username": username, "users": other_users})
+    invite_link = "https://www.songsincommon.com/?compare_with=" + username
+    return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link})
+
+
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
 
 
 def authorize_user_view(request):
+    compare_with = request.GET.get("compare_with", None)
+    if compare_with:
+        global COMPARE_WITH_CACHE
+        COMPARE_WITH_CACHE[str(get_client_ip(request))] = compare_with
     return redirect(get_authorize_url())
 
 
