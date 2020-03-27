@@ -81,7 +81,7 @@
 				<tbody>
 					{% for track in tracks %}
 					<tr>
-						<th><a class="track-title" href="{{ track.url }}">{{ track.title }}</a></th>
+						<th><a class="track-title" href="{{ track.url }}">{{ track.title|truncatechars:50 }}</a></th>
 						<td>{{ track.artists|truncatechars:30 }}</td>
 						<td>{{ track.album|truncatechars:50 }}</td>
 					</tr>
