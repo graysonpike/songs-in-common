@@ -10,6 +10,9 @@ class SpotifyAccount(models.Model):
     image_url = models.CharField(max_length=1024, null=True)
     datetime_joined = models.DateTimeField(auto_now_add=True)
 
+    class Meta:
+        ordering = ['-datetime_joined']
+
 
 class SavedTrack(models.Model):
     user = models.ForeignKey(SpotifyAccount, on_delete=models.CASCADE)
