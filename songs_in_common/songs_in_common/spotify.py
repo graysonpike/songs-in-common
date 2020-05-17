@@ -4,7 +4,9 @@ import urllib.parse as urlparse
 from urllib.parse import parse_qs
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
+from fuzzywuzzy import process
 from . import config
+from django.db import models
 from django.shortcuts import render, redirect, reverse
 from .models import SpotifyAccount, SavedTrack, FollowedPlaylist
 
@@ -149,6 +151,16 @@ def get_common_playlists(user1, user2):
     return playlist_objects
 
 
+def fuzzy_search_users(search_string, username):
+    display_names = SpotifyAccount.objects.exclude(username=username).values_list('display_name', flat=True)
+    search_names = [x[0] for x in process.extract(search_string, display_names, limit=5)]
+    whens = []
+    for sort_index, value in enumerate(search_names):
+        whens.append(models.When(display_name=value, then=sort_index))
+    query = SpotifyAccount.objects.annotate(_sort_index=models.Case(*whens, output_field=models.IntegerField()))
+    return query.exclude(_sort_index=None).order_by('_sort_index')
+
+
 def get_intersection_view(request):
     username1 = request.GET.get('user1')
     username2 = request.GET.get('user2')
@@ -175,18 +187,24 @@ def get_intersection_view(request):
 
 def users_view(request):
     username = request.GET.get("user", None)
+    other_users = []
     if username == None:
         return redirect('landing')
-    # Handle invite links
+    # Handle invite links (see authorize_user_view for explaination)
     global COMPARE_WITH_CACHE
     ip = str(get_client_ip(request))
     compare_with = COMPARE_WITH_CACHE.get(ip, None)
     if compare_with:
         del COMPARE_WITH_CACHE[ip]
         return redirect(reverse('common') + "?user1=" + username + "&user2=" + compare_with)
-    other_users = SpotifyAccount.objects.exclude(username=username)
+    # Seach if query is provided
+    search_string = request.GET.get('search', None)
+    if search_string:
+        other_users = fuzzy_search_users(search_string, username)
+    else:
+        other_users = SpotifyAccount.objects.exclude(username=username)[:10]
     invite_link = "https://www.songsincommon.com/?compare_with=" + username
-    return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link})
+    return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link, "search_string": search_string})
 
 
 def get_client_ip(request):
@@ -199,6 +217,9 @@ def get_client_ip(request):
 
 
 def authorize_user_view(request):
+    # When someone is given an invite link, we cannot add the query string to
+    # the redirect URL during their Spotify authorization. We must instead
+    # cache the user they are supposed to compare with, associated with their IP.
     compare_with = request.GET.get("compare_with", None)
     if compare_with:
         global COMPARE_WITH_CACHE

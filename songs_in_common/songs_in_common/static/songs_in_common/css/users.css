@@ -1,3 +1,29 @@
 .user-list {
 	margin-top: 20px;
 }
+
+.search-header, .list-header {
+	margin-top: 30px;
+}
+
+form input, form h5 {
+	display: inline;
+}
+
+form h5 {
+	margin-right: 20px;
+}
+
+.search-box {
+	margin-right: 20px;
+	border: none;
+	background: transparent;
+	color: white;
+	border-bottom: solid;
+	border-width: 1px;
+	border-color: white;
+}
+
+.search-box:focus {
+	outline:none;
+}

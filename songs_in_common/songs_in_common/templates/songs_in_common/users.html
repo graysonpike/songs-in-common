@@ -16,7 +16,20 @@
 				<h1>Compare with Friends</h1>
 			</div>
 		</div>
-		<div class="row">
+		{% if search_string %}
+		{% else %}
+		<div class="row search-header">
+			<div class="col-sm-12">
+				<form action="/users" method="get">
+					<h5>Search for a user:</h5>
+					<input type="hidden" name="user" value="{{ username }}">
+					<input class="search-box" type="text" name="search">
+					<input class="btn btn-primary" type="submit" value="Submit">
+				</form>
+			</div>
+		</div>
+		{% endif %}
+		<div class="row list-header">
 			<div class="col-sm-12">
 				<h5>Select a username below to compare music</h5>
 			</div>
@@ -27,6 +40,19 @@
 			</div>
 		</div>
 	</div>
+	{% if search_string %}
+	<div class="row search-header">
+		<div class="col-sm-12">
+			<h5>Search results for "{{ search_string }}"</h5>
+		</div>
+	</div>
+	<div class="row">
+		<div class="col-sm-12">
+			<p>Only users who have used Songs In Common before will appear in serach results.</p>
+			<a href="/users?user={{ username }}"><p>Make a different serach</p></a>
+		</div>
+	</div>
+	{% endif %}
 	<div class="row">
 		<div class="col-sm-12">
 			<table class="table user-list">
