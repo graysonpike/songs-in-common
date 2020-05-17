@@ -9,3 +9,8 @@ def landing(request):
     if compare_with:
         compare_with_param = "?compare_with=" + compare_with
     return render(request, 'songs_in_common/landing.html', {"compare_with_param": compare_with_param})
+
+
+def loading(request):
+    username = request.GET.get('user', "")
+    return render(request, 'songs_in_common/loading.html', {"username": username})

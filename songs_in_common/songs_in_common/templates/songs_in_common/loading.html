@@ -1,0 +1,53 @@
+{% extends "songs_in_common/base.html" %}
+
+{% block style_links %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/loading.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<script type="text/javascript">
+	
+	var interval = setInterval(check_status, 1000);
+	var flag = false;
+
+	function check_status() {
+		const Http = new XMLHttpRequest();
+		const url='/get_status?user={{ username }}';
+		Http.open("GET", url);
+		Http.send();
+
+		Http.onreadystatechange = (e) => {
+			if (Http.responseText === "Done" && flag == false) {
+				window.location.href = "/users?user={{ username }}";
+				clearInterval(interval);
+				flag = true;
+			}
+		}
+	}
+
+</script>
+
+<div class="container loading-page">
+	<div class="header">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>Loading Your Music</h1>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<p class="tagline">Please wait while your saved tracks are loaded from Spotify...</p>
+			</div>
+		</div>
+	</div>
+	<div class="row loading-gif">
+		<div class="col-sm-12">
+			<img src="{% static 'songs_in_common/images/loading.gif' %}">
+		</div>
+	</div>
+</div>
+
+{% endblock %}

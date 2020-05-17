@@ -1,4 +1,5 @@
 import base64
+import threading
 import requests
 import urllib.parse as urlparse
 from urllib.parse import parse_qs
@@ -7,6 +8,7 @@ from spotipy.oauth2 import SpotifyClientCredentials
 from fuzzywuzzy import process
 from . import config
 from django.db import models
+from django.http import HttpResponse
 from django.shortcuts import render, redirect, reverse
 from .models import SpotifyAccount, SavedTrack, FollowedPlaylist
 
@@ -17,6 +19,7 @@ PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
 AUTH_SCOPE = "user-library-read"
 
 COMPARE_WITH_CACHE = {}
+PROCESSING_USERS = []
 
 
 def get_client():
@@ -195,6 +198,7 @@ def users_view(request):
     ip = str(get_client_ip(request))
     compare_with = COMPARE_WITH_CACHE.get(ip, None)
     if compare_with:
+        print("COMPARE WITH TRIGGERED")
         del COMPARE_WITH_CACHE[ip]
         return redirect(reverse('common') + "?user1=" + username + "&user2=" + compare_with)
     # Seach if query is provided
@@ -214,6 +218,26 @@ def get_client_ip(request):
     else:
         ip = request.META.get('REMOTE_ADDR')
     return ip
+
+
+def save_user_data(account):
+    global PROCESSING_USERS
+    PROCESSING_USERS.append(account.username)
+    save_saved_tracks_from_user(account)
+    playlists = get_public_playlists(account)
+    save_tracks_from_owned_playlists(account, playlists)
+    save_followed_playlists(account, playlists)
+    PROCESSING_USERS.remove(account.username)
+
+
+def get_status_view(request):
+    username = request.GET.get('user', None)
+    if username == None:
+        return redirect('landing')
+    if username in PROCESSING_USERS:
+        return HttpResponse('Processing')
+    return HttpResponse('Done')
+
 
 
 def authorize_user_view(request):
@@ -255,8 +279,6 @@ def save_user_view(request):
     except Exception:
         pass
     account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url, url=url, display_name=display_name)
-    save_saved_tracks_from_user(account)
-    playlists = get_public_playlists(account)
-    save_tracks_from_owned_playlists(account, playlists)
-    save_followed_playlists(account, playlists)
-    return redirect(reverse('users') + "?user=" + account.username)
+    thread = threading.Thread(target=save_user_data, args=(account,))
+    thread.start()
+    return redirect(reverse('loading') + "?user=" + account.username)
