@@ -18,6 +18,8 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
+from django.conf import settings
+from django.conf.urls.static import static
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -28,4 +30,4 @@ urlpatterns = [
     path('users/', spotify.users_view, name='users'),
     path('loading/', views.loading, name='loading'),
     path('get_status/', spotify.get_status_view, name='get_status'),
-]
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -4,6 +4,7 @@ chardet==3.0.4
 Django==3.0.4
 fuzzywuzzy==0.18.0
 idna==2.9
+Pillow==7.1.2
 pytz==2019.3
 requests==2.23.0
 six==1.14.0

@@ -1,12 +1,14 @@
 import base64
 import threading
 import requests
+from io import BytesIO
 import urllib.parse as urlparse
 from urllib.parse import parse_qs
 import spotipy
 from spotipy.oauth2 import SpotifyClientCredentials
 from fuzzywuzzy import process
 from . import config
+from django.core import files
 from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, reverse
@@ -154,6 +156,27 @@ def get_common_playlists(user1, user2):
     return playlist_objects
 
 
+def save_profile_image(account):
+    token = request_bearer_token()
+    spotify = spotipy.Spotify(auth=token)
+    spotify_user = spotify.user(account.username)
+    image_url = None
+    try:
+        image_url = spotify_user['images'][0]['url']
+    except Exception:
+        return
+    response = requests.get(image_url, stream=True)
+    stream = BytesIO()
+    stream.write(response.content)
+    filename = account.username
+    account.profile_image.save(filename, files.File(stream))
+
+
+def save_all_profile_images():
+    for account in SpotifyAccount.objects.all():
+        save_profile_image(account)
+
+
 def fuzzy_search_users(search_string, username):
     display_names = SpotifyAccount.objects.exclude(username=username).values_list('display_name', flat=True)
     search_names = [x[0] for x in process.extract(search_string, display_names, limit=5)]
@@ -208,6 +231,7 @@ def users_view(request):
     else:
         other_users = SpotifyAccount.objects.exclude(username=username)[:10]
     invite_link = "https://www.songsincommon.com/?compare_with=" + username
+    # save_all_profile_images()
     return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link, "search_string": search_string})
 
 
@@ -259,7 +283,6 @@ def refresh_all_public_playlists_and_playlist_saved_tracks():
         save_followed_playlists(user, playlists)
 
 
-
 def save_user_view(request):
     code = request.GET.get('code')
     access_token, refresh_token = request_tokens(code)
@@ -278,7 +301,8 @@ def save_user_view(request):
         image_url = current_user['images'][0]['url']
     except Exception:
         pass
-    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, image_url=image_url, url=url, display_name=display_name)
+    account = SpotifyAccount.objects.create(username=username, access_token=access_token, refresh_token=refresh_token, url=url, display_name=display_name)
+    save_profile_image(account)
     thread = threading.Thread(target=save_user_data, args=(account,))
     thread.start()
     return redirect(reverse('loading') + "?user=" + account.username)

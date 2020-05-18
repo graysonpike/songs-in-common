@@ -7,7 +7,7 @@ class SpotifyAccount(models.Model):
     access_token = models.CharField(max_length=1024)
     refresh_token = models.CharField(max_length=1024)
     url = models.CharField(max_length=1024)
-    image_url = models.CharField(max_length=1024, null=True)
+    profile_image = models.ImageField(upload_to='profile_images', null=True)
     datetime_joined = models.DateTimeField(auto_now_add=True)
 
     class Meta:

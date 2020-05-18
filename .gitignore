@@ -1,6 +1,7 @@
 # Songs in Common
 /songs_in_common/config.json
 /songs_in_common/static/
+/songs_in_common/media/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

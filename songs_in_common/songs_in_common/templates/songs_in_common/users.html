@@ -59,7 +59,7 @@
 				<tbody>
 					{% for user in users %}
 					<tr>
-						<td><a href="/common?user1={{ username }}&user2={{ user.username }}">{{ user.display_name }}</a></td>
+						<td><img src="{% if user.profile_image %}{{ user.profile_image.url }}{% else %}{% static 'songs_in_common/images/default_profile_image.png' %}{% endif %}" class="profile-image"><a href="/common?user1={{ username }}&user2={{ user.username }}">{{ user.display_name }}</a></td>
 					</tr>
 					{% endfor %}
 				</tbody>
