@@ -16,10 +16,14 @@
 				<h1>Songs in Common</h1>
 			</div>
 		</div>
-
-		<div class="row">
-			<div class="col-sm-12">
-				<h5>Showing {{ num_tracks }} Tracks and {{ num_playlists }} Followed Playlists in common for <a href="{{ user1.url }}">{{ user1.display_name }}</a> and <a href="{{ user2.url }}">{{ user2.display_name }}</a></h5>
+		<div class="row username-row">
+			<div class="col-sm-4 user">
+				<img src="{% if user1.profile_image %}{{ user1.profile_image.url }}{% else %}{% static 'songs_in_common/images/default_profile_image.png' %}{% endif %}" class="profile-image">
+				<h5 class="username"><a href="{{ user1.url }}">{{ user1.display_name }}</h5></a>
+			</div>
+			<div class="col-sm-4 user">
+				<img src="{% if user2.profile_image %}{{ user2.profile_image.url }}{% else %}{% static 'songs_in_common/images/default_profile_image.png' %}{% endif %}" class="profile-image">
+				<h5 class="username"><a href="{{ user2.url }}">{{ user2.display_name }}</h5></a>
 			</div>
 		</div>
 		<div class="row">
@@ -31,7 +35,7 @@
 	{% if playlists %}
 	<div class="row">
 		<div class="col-sm-12">
-			<h5 class="list-title">Followed Playlists</h5>
+			<h5 class="list-title">{{ num_playlists }} Followed Playlists</h5>
 		</div>
 	</div>
 	<div class="row">
@@ -60,7 +64,7 @@
 	{% if tracks %}
 	<div class="row">
 		<div class="col-sm-12">
-			<h5 class="list-title">Tracks</h5>
+			<h5 class="list-title">{{ num_tracks }} Tracks</h5>
 		</div>
 	</div>
 	<div class="row">
