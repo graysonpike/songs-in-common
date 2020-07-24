@@ -224,12 +224,14 @@ def users_view(request):
         print("COMPARE WITH TRIGGERED")
         del COMPARE_WITH_CACHE[ip]
         return redirect(reverse('common') + "?user1=" + username + "&user2=" + compare_with)
-    # Seach if query is provided
+    # Search if query is provided
     search_string = request.GET.get('search', None)
     if search_string:
         other_users = fuzzy_search_users(search_string, username)
     else:
-        other_users = SpotifyAccount.objects.exclude(username=username)[:10]
+    # Default: Display me and 9 most recent users
+        other_users = [SpotifyAccount.objects.get(username='grayson112233')]
+        other_users += list(SpotifyAccount.objects.exclude(username=username)[:9])
     invite_link = "https://www.songsincommon.com/?compare_with=" + username
     # save_all_profile_images()
     return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link, "search_string": search_string})
