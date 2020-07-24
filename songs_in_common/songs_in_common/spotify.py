@@ -211,6 +211,18 @@ def get_intersection_view(request):
         })
 
 
+def get_client_ip(request):
+    print("### INFO ###")
+    print(request.META)
+    print("### END INFO ###")
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
+
 def users_view(request):
     username = request.GET.get("user", None)
     other_users = []
@@ -235,15 +247,6 @@ def users_view(request):
     invite_link = "https://www.songsincommon.com/?compare_with=" + username
     # save_all_profile_images()
     return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link, "search_string": search_string})
-
-
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[0]
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
 
 
 def save_user_data(account):
