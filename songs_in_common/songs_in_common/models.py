@@ -32,3 +32,12 @@ class FollowedPlaylist(models.Model):
     spotify_id = models.CharField(max_length=512)
     num_tracks = models.IntegerField()
     url = models.CharField(max_length=512)
+
+
+class ProcessingUser(models.Model):
+    username = models.CharField(max_length=1024)
+
+
+class CachedCompareWith(models.Model):
+    ip = models.CharField(max_length=512)
+    username = models.CharField(max_length=1024)

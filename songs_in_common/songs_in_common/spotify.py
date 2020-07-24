@@ -12,16 +12,13 @@ from django.core import files
 from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, reverse
-from .models import SpotifyAccount, SavedTrack, FollowedPlaylist
+from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser, CachedCompareWith
 
 
 OAUTH_AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 OAUTH_TOKEN_URL = "https://accounts.spotify.com/api/token"
 PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
 AUTH_SCOPE = "user-library-read"
-
-COMPARE_WITH_CACHE = {}
-PROCESSING_USERS = []
 
 
 def get_client():
@@ -221,13 +218,13 @@ def users_view(request):
     if username == None:
         return redirect('landing')
     # Handle invite links (see authorize_user_view for explaination)
-    global COMPARE_WITH_CACHE
     ip = str(get_client_ip(request))
-    compare_with = COMPARE_WITH_CACHE.get(ip, None)
-    if compare_with:
-        print("COMPARE WITH TRIGGERED")
-        del COMPARE_WITH_CACHE[ip]
+    try:
+        cache_entry = CachedCompareWith.objects.get(ip=ip)
+        compare_with = cache_entry.username
+        cache_entry.delete()
         return redirect(reverse('common') + "?user1=" + username + "&user2=" + compare_with)
+    except CachedCompareWith.DoesNotExist: pass
     # Search if query is provided
     search_string = request.GET.get('search', None)
     if search_string:
@@ -235,30 +232,30 @@ def users_view(request):
     else:
     # Default: Display me and 9 most recent users
         other_users = [SpotifyAccount.objects.get(username='grayson112233')]
-        other_users += list(SpotifyAccount.objects.exclude(username=username)[:9])
+        other_users += list(SpotifyAccount.objects.exclude(username=username).exclude(username='grayson112233')[:9])
     invite_link = "https://www.songsincommon.com/?compare_with=" + username
     # save_all_profile_images()
     return render(request, "songs_in_common/users.html", {"username": username, "users": other_users, "invite_link": invite_link, "search_string": search_string})
 
 
 def save_user_data(account):
-    global PROCESSING_USERS
-    PROCESSING_USERS.append(account.username)
+    processing_user = ProcessingUser.objects.create(username=account.username)
     save_saved_tracks_from_user(account)
     playlists = get_public_playlists(account)
     save_tracks_from_owned_playlists(account, playlists)
     save_followed_playlists(account, playlists)
-    PROCESSING_USERS.remove(account.username)
+    processing_user.delete()
 
 
 def get_status_view(request):
     username = request.GET.get('user', None)
     if username == None:
         return redirect('landing')
-    if username in PROCESSING_USERS:
-        return HttpResponse('Processing')
-    return HttpResponse('Done')
-
+    try:
+        ProcessingUser.objects.get(username=username)
+    except ProcessingUser.DoesNotExist:
+        return HttpResponse('Done')
+    return HttpResponse('Processing')
 
 
 def authorize_user_view(request):
@@ -267,8 +264,8 @@ def authorize_user_view(request):
     # cache the user they are supposed to compare with, associated with their IP.
     compare_with = request.GET.get("compare_with", None)
     if compare_with:
-        global COMPARE_WITH_CACHE
-        COMPARE_WITH_CACHE[str(get_client_ip(request))] = compare_with
+        ip = str(get_client_ip(request))
+        CachedCompareWith.objects.create(ip=ip, username=compare_with)
     return redirect(get_authorize_url())
 
 
