@@ -12,27 +12,20 @@ from django.core import files
 from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, reverse
-from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser, CachedCompareWith
+from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser, CachedCompareWith, CachedCreatePlaylist
 
 
 OAUTH_AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 OAUTH_TOKEN_URL = "https://accounts.spotify.com/api/token"
 PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
-AUTH_SCOPE = "user-library-read"
+AUTH_SCOPE = "user-library-read playlist-modify-public"
 
 
-def get_client():
-    client_id = config.get_config()['spotify_app']['client_id']
-    client_secret = config.get_config()['spotify_app']['client_secret']
-    spotify = spotipy.Spotify(client_credentials_manager=SpotifyClientCredentials(client_id=client_id, client_secret=client_secret))
-    return spotify
-
-
-def get_authorize_url():
+def get_authorize_url(action):
     payload = {
         "client_id": config.get_config()['spotify_app']['client_id'],
         "response_type": "code",
-        "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_url'],
+        "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_urls'][action],
         "scope": AUTH_SCOPE,
     }
     urlparams = urlparse.urlencode(payload)
@@ -44,7 +37,7 @@ def parse_response_code(url):
     return params['code']
 
 
-def request_tokens(code):
+def request_tokens(code, action):
     client_id = config.get_config()['spotify_app']['client_id']
     client_secret = config.get_config()['spotify_app']['client_secret']
     headers = {
@@ -53,7 +46,7 @@ def request_tokens(code):
     payload = {
         "grant_type": "authorization_code",
         "code": code,
-        "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_url'],
+        "redirect_uri": config.get_config()['spotify_app']['oauth_redirect_urls'][action],
     }
     response = requests.post(OAUTH_TOKEN_URL, headers=headers, data=payload)
     data = response.json()
@@ -106,6 +99,65 @@ def get_public_playlists(account):
         results = spotify.next(results)
         playlists += results['items']
     return playlists
+
+
+def create_playlist(client, name):
+    user_id = client.current_user()['id']
+    return client.user_playlist_create(user_id, name, description="Created with SongsInCommon.com")
+
+
+def divide_chunks(l, n):  
+    for i in range(0, len(l), n):  
+        yield l[i:i + n]
+
+
+def add_tracks_to_playlist(client, playlist_id, tracks):
+    user_id = client.current_user()['id']
+    # Break track uri list into groups of 100 tracks or less
+    uri_groups = divide_chunks(tracks, 100)
+    for uri_group in uri_groups:
+        print(client.user_playlist_add_tracks(user_id, playlist_id, uri_group))
+
+
+def create_common_playlist_view(request):
+    code = request.GET.get('code', None)
+    if code == None:
+        username = request.GET.get('user', None)
+        other_username = request.GET.get('other', None)
+        if username == None or other_username == None:
+            return redirect('landing')
+        CachedCreatePlaylist.objects.create(username=username, other_username=other_username)
+        return redirect("/authorize?action=create_playlist")
+    access_token, refresh_token = request_tokens(code, 'create_playlist')
+    client = spotipy.Spotify(auth=access_token)
+    spotipy_user = client.current_user()
+    username = spotipy_user['id']
+    cached_object = CachedCreatePlaylist.objects.get(username=username)
+    other_username = cached_object.other_username
+    cached_object.delete()
+    account = SpotifyAccount.objects.get(username=username)
+    other_account = SpotifyAccount.objects.get(username=other_username)
+    common_tracks_uris = get_tracks_intersection_uris(account, other_account)
+    playlist = create_playlist(client, "Songs in Common with %s" % (other_account.display_name))
+    add_tracks_to_playlist(client, playlist['id'], common_tracks_uris)
+    return redirect('/playlist-created?user=%s&other=%s&plid=%s' % (username, other_username, playlist['id']))
+
+
+def playlist_created_view(request):
+    username = request.GET.get('user')
+    other_username = request.GET.get('other')
+    account = SpotifyAccount.objects.get(username=username)
+    other_account = SpotifyAccount.objects.get(username=other_username)
+    token = request_bearer_token()
+    client = spotipy.Spotify(auth=token)
+    playlist = client.playlist(request.GET.get('plid'))
+
+    return render(request, 'songs_in_common/playlist_created.html', 
+        {
+            "user1": account,
+            "user2": other_account,
+            "playlist_url": playlist['external_urls'].get('spotify', '')
+        })
 
 
 def save_tracks_from_owned_playlists(account, playlists):
@@ -184,25 +236,29 @@ def fuzzy_search_users(search_string, username):
     return query.exclude(_sort_index=None).order_by('_sort_index')
 
 
+def get_tracks_intersection_uris(account1, account2):
+    account1_uris = [track.uri for track in account1.savedtrack_set.all()]
+    account2_uris = [track.uri for track in account2.savedtrack_set.all()]
+    return list(set(account1_uris) & set(account2_uris))
+
+
 def get_intersection_view(request):
     username1 = request.GET.get('user1')
     username2 = request.GET.get('user2')
-    user1 = SpotifyAccount.objects.get(username=username1)
-    user2 = SpotifyAccount.objects.get(username=username2)
-    user1_uris = [track.uri for track in user1.savedtrack_set.all()]
-    user2_uris = [track.uri for track in user2.savedtrack_set.all()]
-    intersect_uris = list(set(user1_uris) & set(user2_uris)) 
+    account1 = SpotifyAccount.objects.get(username=username1)
+    account2 = SpotifyAccount.objects.get(username=username2)
+    intersect_uris = get_tracks_intersection_uris(account1, account2)
     tracks = []
     for uri in intersect_uris:
         tracks.append(SavedTrack.objects.filter(uri=uri)[0])
-    playlists = get_common_playlists(user1, user2)
+    playlists = get_common_playlists(account1, account2)
     # refresh_all_public_playlists_and_playlist_saved_tracks()
     return render(request, 'songs_in_common/common.html', 
         {
             "num_tracks": len(tracks),
             "tracks": tracks,
-            "user1": user1,
-            "user2": user2,
+            "user1": account1,
+            "user2": account2,
             "num_playlists": len(playlists),
             "playlists": playlists,
         })
@@ -262,11 +318,16 @@ def authorize_user_view(request):
     # When someone is given an invite link, we cannot add the query string to
     # the redirect URL during their Spotify authorization. We must instead
     # cache the user they are supposed to compare with, associated with their IP.
-    compare_with = request.GET.get("compare_with", None)
-    if compare_with:
-        ip = str(get_client_ip(request))
-        CachedCompareWith.objects.create(ip=ip, username=compare_with)
-    return redirect(get_authorize_url())
+    action = request.GET.get("action", None)
+    if action == None:
+        return redirect('landing')
+    if action == 'save_user':
+        compare_with = request.GET.get("compare_with", None)
+        if compare_with:
+            ip = str(get_client_ip(request))
+            CachedCompareWith.objects.create(ip=ip, username=compare_with)
+    return redirect(get_authorize_url(action))
+
 
 
 def refresh_all_public_playlists_and_playlist_saved_tracks():
@@ -279,7 +340,7 @@ def refresh_all_public_playlists_and_playlist_saved_tracks():
 
 def save_user_view(request):
     code = request.GET.get('code')
-    access_token, refresh_token = request_tokens(code)
+    access_token, refresh_token = request_tokens(code, 'save_user')
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     username = current_user['id']

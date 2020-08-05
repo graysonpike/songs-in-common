@@ -1,0 +1,42 @@
+{% extends "songs_in_common/base.html" %}
+
+{% block style_links %}
+
+{% load static %}
+<link rel="stylesheet" type="text/css" href="{% static 'songs_in_common/css/playlist_created.css' %}" />
+{% endblock %}
+
+{% block content %}
+
+<div class="container content">
+	<div class="header">
+		<div class="row">
+			<div class="col-sm-12">
+				<h1>New Playlist Created</h1>
+			</div>
+		</div>
+		<div class="row justify-content-sm-center username-row">
+			<div class="col-sm-4 user">
+				<img src="{% if user1.profile_image %}{{ user1.profile_image.url }}{% else %}{% static 'songs_in_common/images/default_profile_image.png' %}{% endif %}" class="profile-image">
+				<h5 class="username"><a href="{{ user1.url }}">{{ user1.display_name }}</h5></a>
+			</div>
+			<div class="col-sm-4 user">
+				<img src="{% if user2.profile_image %}{{ user2.profile_image.url }}{% else %}{% static 'songs_in_common/images/default_profile_image.png' %}{% endif %}" class="profile-image">
+				<h5 class="username"><a href="{{ user2.url }}">{{ user2.display_name }}</h5></a>
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<a class="btn btn-primary open-button" href="{{ playlist_url }}" target="_blank" role="button">View in Spotify</a>
+				
+			</div>
+		</div>
+		<div class="row">
+			<div class="col-sm-12">
+				<a class="btn btn-secondary again-button" href="/users?user={{ user1.username }}" role="button">Compare Again</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+{% endblock %}

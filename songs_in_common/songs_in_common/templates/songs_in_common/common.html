@@ -63,6 +63,11 @@
 	{% endif %}
 	{% if tracks %}
 	<div class="row">
+			<div class="col-sm-12">
+				<a class="btn btn-primary create-button" href="/create-playlist?user={{ user1.username }}&other={{ user2.username }}" role="button">Create Playlist</a>
+			</div>
+		</div>
+	<div class="row">
 		<div class="col-sm-12">
 			<h5 class="list-title">{{ num_tracks }} Tracks</h5>
 		</div>

@@ -41,3 +41,8 @@ class ProcessingUser(models.Model):
 class CachedCompareWith(models.Model):
     ip = models.CharField(max_length=512)
     username = models.CharField(max_length=1024)
+
+
+class CachedCreatePlaylist(models.Model):
+    username = models.CharField(max_length=512)
+    other_username = models.CharField(max_length=512)

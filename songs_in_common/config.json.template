@@ -2,6 +2,9 @@
 	"spotify_app": {
 		"client_id": "",
 		"client_secret": "",
-		"oauth_redirect_url": ""
+		"oauth_redirect_urls": {
+			"save_user": "",
+			"create_playlist": ""
+		}
 	}
 }
