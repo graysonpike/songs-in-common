@@ -15,3 +15,13 @@ h1 {
 	margin-bottom: 70px;
 	font-size: 1.5rem;
 }
+
+.explain p {
+	font-size: 20px;
+}
+
+.screenshot {
+	border-color: white;
+	border: solid;
+	border-width: 3px;
+}
