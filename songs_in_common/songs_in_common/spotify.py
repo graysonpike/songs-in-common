@@ -98,9 +98,6 @@ def get_playlists(account):
     while results['next']:
         results = spotify.next(results)
         playlists += results['items']
-    for playlist in playlists:
-        print(playlist)
-        print(playlist['name'])
     return playlists
 
 
