@@ -18,7 +18,7 @@ from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser
 OAUTH_AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 OAUTH_TOKEN_URL = "https://accounts.spotify.com/api/token"
 PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
-AUTH_SCOPE = "user-library-read playlist-modify-public"
+AUTH_SCOPE = "user-library-read playlist-modify-public playlist-read-private"
 
 
 def get_authorize_url(action):
@@ -88,8 +88,8 @@ def save_saved_tracks_from_user(account):
     SavedTrack.objects.bulk_create(track_objects)
 
 
-# Only gets the first 50 public playlists
-def get_public_playlists(account):
+# Only gets the first 50 playlists
+def get_playlists(account):
     token = request_bearer_token()
     spotify = spotipy.Spotify(auth=token)
     playlists = []
@@ -252,7 +252,6 @@ def get_intersection_view(request):
     for uri in intersect_uris:
         tracks.append(SavedTrack.objects.filter(uri=uri)[0])
     playlists = get_common_playlists(account1, account2)
-    # refresh_all_public_playlists_and_playlist_saved_tracks()
     return render(request, 'songs_in_common/common.html', 
         {
             "num_tracks": len(tracks),
@@ -297,7 +296,8 @@ def users_view(request):
 def save_user_data(account):
     processing_user = ProcessingUser.objects.create(username=account.username)
     save_saved_tracks_from_user(account)
-    playlists = get_public_playlists(account)
+    playlists = get_playlists(account)
+
     save_tracks_from_owned_playlists(account, playlists)
     save_followed_playlists(account, playlists)
     processing_user.delete()
@@ -327,15 +327,6 @@ def authorize_user_view(request):
             ip = str(get_client_ip(request))
             CachedCompareWith.objects.create(ip=ip, username=compare_with)
     return redirect(get_authorize_url(action))
-
-
-
-def refresh_all_public_playlists_and_playlist_saved_tracks():
-    users = SpotifyAccount.objects.all()
-    for user in users:
-        playlists = get_public_playlists(user)
-        save_tracks_from_owned_playlists(user, playlists)
-        save_followed_playlists(user, playlists)
 
 
 def save_user_view(request):
