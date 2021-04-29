@@ -18,7 +18,7 @@ from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser
 OAUTH_AUTHORIZE_URL = "https://accounts.spotify.com/authorize"
 OAUTH_TOKEN_URL = "https://accounts.spotify.com/api/token"
 PROFILE_INFO_URL = "https://api.spotify.com/v1/me"
-AUTH_SCOPE = "user-library-read playlist-modify-public playlist-read-private"
+AUTH_SCOPE = "user-library-read playlist-modify-public playlist-read-private playlist-read-collaborative"
 
 
 def get_authorize_url(action):
@@ -91,13 +91,16 @@ def save_saved_tracks_from_user(account):
 # Only gets the first 50 playlists
 def get_playlists(account):
     token = request_bearer_token()
-    spotify = spotipy.Spotify(auth=token)
+    spotify = spotipy.Spotify(auth=account.access_token)
     playlists = []
-    results = spotify.user_playlists(account.username, limit=50)
+    results = spotify.current_user_playlists(limit=50)
     playlists += results['items']
     while results['next']:
         results = spotify.next(results)
         playlists += results['items']
+    for playlist in playlists:
+        print(playlist)
+        print(playlist['name'])
     return playlists
 
 
