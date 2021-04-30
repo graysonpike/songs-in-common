@@ -295,7 +295,7 @@ def users_view(request):
 
 
 def save_user_data(account):
-    if not ProcessingUser.objects.get(username=account.username).exists():
+    if not ProcessingUser.objects.filter(username=account.username).exists():
         processing_user = ProcessingUser.objects.create(username=account.username)
         save_saved_tracks_from_user(account)
         playlists = get_playlists(account)
@@ -337,6 +337,8 @@ def save_user_view(request):
     client = spotipy.Spotify(auth=access_token)
     current_user = client.current_user()
     username = current_user['id']
+    if ProcessingUser.objects.filter(username=username).exists():
+        return redirect(reverse('loading') + "?user=" + username)
     display_name = current_user['display_name']
     url = "https://open.spotify.com/user/" + username
     try:
