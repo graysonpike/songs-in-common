@@ -32,4 +32,5 @@ urlpatterns = [
     path('get-status/', spotify.get_status_view, name='get_status'),
     path('create-playlist/', spotify.create_common_playlist_view, name='create_playlist'),
     path('playlist-created/', spotify.playlist_created_view, name='playlist_created'),
+    path('delete-processing-users/', spotify.delete_processing_users_view, name='delete_processing_users')
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
