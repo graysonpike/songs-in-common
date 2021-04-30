@@ -12,6 +12,7 @@ from django.core import files
 from django.db import models
 from django.http import HttpResponse
 from django.shortcuts import render, redirect, reverse
+from django.contrib.auth.decorators import user_passes_test
 from .models import SpotifyAccount, SavedTrack, FollowedPlaylist, ProcessingUser, CachedCompareWith, CachedCreatePlaylist
 
 
@@ -294,9 +295,10 @@ def users_view(request):
 
 
 def save_user_data(account):
-    processing_user = ProcessingUser.objects.create(username=account.username)
-    save_saved_tracks_from_user(account)
-    playlists = get_playlists(account)
+    if not ProcessingUser.objects.get(username=account.username).exists():
+        processing_user = ProcessingUser.objects.create(username=account.username)
+        save_saved_tracks_from_user(account)
+        playlists = get_playlists(account)
 
     save_tracks_from_owned_playlists(account, playlists)
     save_followed_playlists(account, playlists)
@@ -352,3 +354,9 @@ def save_user_view(request):
     thread = threading.Thread(target=save_user_data, args=(account,))
     thread.start()
     return redirect(reverse('loading') + "?user=" + account.username)
+
+
+@user_passes_test(lambda u:u.is_staff, login_url="admin/")  
+def delete_processing_users_view(request):
+    ProcessingUser.objects.all().delete()
+    return redirect(reverse('landing'))
