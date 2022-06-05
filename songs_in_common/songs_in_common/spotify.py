@@ -320,7 +320,7 @@ def authorize_user_view(request):
     # When someone is given an invite link, we cannot add the query string to
     # the redirect URL during their Spotify authorization. We must instead
     # cache the user they are supposed to compare with, associated with their IP.
-    action = request.GET.get("action", None)
+    action = request.GET.get("action", None).replace("/", "")
     if action == None:
         return redirect('landing')
     if action == 'save_user':
