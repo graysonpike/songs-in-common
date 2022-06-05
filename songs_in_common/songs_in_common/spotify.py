@@ -303,7 +303,7 @@ def save_user_data(account):
         print("Saving user playlists")
         playlists = get_playlists(account)
     print("save_tracks_from_owned_playlists")
-    save_tracks_from_owned_playlists(account, playlists)
+    # save_tracks_from_owned_playlists(account, playlists)
     print("save_followed_playlists")
     save_followed_playlists(account, playlists)
     print("Deleing processing user record")
